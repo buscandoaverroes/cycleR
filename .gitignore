@@ -1,5 +1,24 @@
-.Rproj.user
-.Rhistory
-.Rdata
-.httr-oauth
-.DS_Store
+# Default to ignore everything
+*
+
+# Then do not ignore the following
+# R-related
+!/**/*.R
+!/**/*.Rmd
+!man/*.Rd
+!.Rbuildignore
+
+
+# Documentation, etc
+!/**/*.md
+!README.md
+!CONTRIBUTING.md
+!LICENSE*
+!NAMESPACE*
+!DESCRIPTION*
+
+
+# git-related
+!.gitignore
+!.gitattributes
+!*/
