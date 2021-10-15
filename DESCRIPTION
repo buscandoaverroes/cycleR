@@ -1,16 +1,16 @@
 Package: cycleR
-Title: What the Package Does (One Line, Title Case)
+Title: Essential Tools for Bikeshare Analysis
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Tom",
+           family = "Mosher",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+           email = "buscandoaverroes@icloud.com")
+Description: A suite of functions designed to simplify the management of bicycle trip data.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
+Imports: dplyr, tidyselect, magrittr, tibble, rlang, data.table 
+Depends: R (>= 3.5.0)
