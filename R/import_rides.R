@@ -7,8 +7,9 @@
 #'
 #' @param eval_directory the top level directory folder
 #' @param filetype one of "csv", "rda", or "rds".
-#' @param file_pattern a quoted regex expression to match file patterns in the
-#' @param rename_list a named vector of newnames = oldnames of variables to rename
+#' @param file_pattern a quoted regex expression to match file patterns in the directory. Extensions must be .csv.
+#' @param rename_cols a vector of new names passed on to \code{data.table::fread()} to rename columns.
+#' @param check_names TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.
 #' @return a dataframe of all appended survey files
 #' @export
 #' @import dplyr
@@ -19,21 +20,24 @@
 
 import_rides <- function(eval_directory,
                          filetype = "csv",
-                         file_pattern = NULL,
-                         rename_list = NULL,
-                         rename_fn = NULL) {
+                         file_pattern = "\\.csv",
+                         rename_cols = NULL,
+                         check_names = TRUE) {
+
+  # check file extension supplied
+ # write check that only .csv files will be supplied
 
 
   # determine files to import
   files <- base::list.files(eval_directory,
-                            pattern = file_pattern,
+                            pattern = "\\.csv$",
                             recursive = TRUE, # search all sub folders
                             full.names = TRUE, # list full file names
                             include.dirs = TRUE) %>% # include the full file path
     dplyr::as_tibble() %>%
     dplyr::rename(paths = value) %>%
     dplyr::mutate(
-      names = stringr::str_extract(basename(paths), ".")
+      names = base::basename(paths)
     )
 
 
@@ -41,39 +45,17 @@ import_rides <- function(eval_directory,
   file_list <- list()
 
   # import file into df list
-  if (stringr::str_to_lower(filetype) == "csv") {
     df <- purrr::map2(
       files$names, files$paths,
       function(x, y) {
-        file_list[[x]] <<- data.table::fread(y)
+        file_list[[x]] <<- data.table::fread(input = y, check.names = check_names, col.names = rename_cols)
           }
     )
-  } else if (stringr::str_to_lower(filetype) == "rds") {
-    df <- purrr::map2(
-      files$names, files$paths,
-      function(x, y) {
-        file_list[[x]] <<- base::readRDS(y)
-      }
-    )
-  } else if (stringr::str_to_lower(filetype) == "rda") {
-    df <- purrr::map2(
-      files$names, files$paths,
-      function(x, y) {
-        file_list[[x]] <<- base::readRDS(y)
-      }
-    )
-  } else {
-    # return error
-  }
 
-
-  # rename cols of each df
-  df2 <- df %>%
-    dplyr::rename_with(df, ~ rename_fn)
 
 
   # bind all rows of df
-  df3 <- dplyr::bind_rows(df2)
+  df2 <- dplyr::bind_rows(df)
 
-  return(df3)
+  return(df2)
 }
