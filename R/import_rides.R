@@ -6,7 +6,7 @@
 #' outputs an appended dataframe
 #'
 #' @param eval_directory the top level directory folder
-#' @param filetype one of "csv", "rda", or "rds".
+#' @param filetype "csv". Currently only csv extensions are supported.
 #' @param file_pattern a quoted regex expression to match file patterns in the directory. Extensions must be .csv.
 #' @param rename_cols a vector of new names passed on to \code{data.table::fread()} to rename columns.
 #' @param check_names TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.
