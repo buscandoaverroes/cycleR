@@ -11,7 +11,8 @@
 #' @param timezone "US/Eastern", the timezone passed to \code{lubridate}. See \code{base::OlsonNames()} for valid tz names.
 #' @param weekstart 7, an integer passed to \code{base::getOption('lubridate.week.start')}. Determines the start day of the week. 7 = Sunday.
 #' @param member member, an unquoted name of the variable containing the string member data.
-#' @param group_vars NULL, a character vector of additional variables to determine origin-destination groups.
+#' @param group_vars a character vector of additional variables to determine origin-destination groups.
+#' Defaults to group by start/end station and year-month-day-hour.
 #' @param round_dig 3, the number of digits when rounding.
 #' @return a dataframe of all appended survey files
 #' @export
@@ -26,7 +27,7 @@ transform_od <- function(df,
                          timezone = "US/Eastern",
                          weekstart = 7,
                          member_var = member,
-                         group_vars = NULL,
+                         group_vars = c("start", "end", "year", "month", "hour", "day_of_wk", "day_of_yr"),
                          round_dig  = 3
                          ) {
 
@@ -64,7 +65,7 @@ transform_od <- function(df,
 
   # summarize and transform to OD data
   df3 <- df2 %>%
-    dplyr::group_by(!!! by) %>% # , year, month, hour, day_of_wk, day_of_yr
+    dplyr::group_by(!!!by) %>%
     dplyr::summarise(
       dur_med = base::round(stats::median(dur, na.rm = TRUE), round_dig),
       dur_sd  = base::round(stats::sd(dur, na.rm = TRUE), round_dig),
