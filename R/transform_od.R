@@ -26,13 +26,16 @@ transform_od <- function(df,
                          destination_datetime,
                          timezone = "US/Eastern",
                          weekstart = 7,
-                         member_var = member,
+                         member_var,
                          group_vars = c("start", "end", "year", "month", "hour", "day_of_wk", "day_of_yr"),
                          round_dig  = 3
                          ) {
 
-  # determine groups
+  # determine groups + member var
   by <- rlang::syms(group_vars)
+
+  mem <- rlang::sym(member_var)
+
 
   # add lubridate data for year, month, hour, etc
   df2 <- df %>%
@@ -60,7 +63,7 @@ transform_od <- function(df,
     dplyr::summarise(
       dur_med = base::round(stats::median(dur, na.rm = TRUE), round_dig),
       dur_sd  = base::round(stats::sd(dur, na.rm = TRUE), round_dig),
-      member_pct = base::round(base::mean(member), round_dig),
+      member_pct = base::round(base::mean(!!!mem), round_dig),
       n_rides = n()
     )
 

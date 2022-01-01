@@ -50,8 +50,14 @@ clean_member <- function(df,
   if (keep) {
     df3 <- df2
   } else {
-    df3 <- df2 %>%
-      dplyr::select(-{{ col }})
+    if (exists) {
+      df3 <- df2 %>%
+        dplyr::select(-{{ col }}) %>%
+        rename("member" = "member_new")
+    } else {
+      df3 <- df2 %>%
+        dplyr::select(-{{ col }})
+    }
   }
 
   return(df3)
