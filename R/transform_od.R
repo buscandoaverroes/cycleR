@@ -14,7 +14,7 @@
 #' @param group_vars a character vector of additional variables to determine origin-destination groups.
 #' Defaults to group by start/end station and year-month-day-hour.
 #' @param round_dig 3, the number of digits when rounding.
-#' @return a dataframe of all appended survey files
+#' @return a dataframe of summarized origin-destination information.
 #' @export
 #' @import dplyr
 #' @import lubridate
@@ -50,16 +50,7 @@ transform_od <- function(df,
       day_of_wk  = base::as.integer(lubridate::wday(leave,
                                                     label = FALSE,
                                                     week_start=base::getOption('lubridate.week.start', weekstart))), # numeric, start sunday
-      day_of_yr = base::as.integer(lubridate::yday(leave)),
-      member = case_when(  # clean/determine member now to determine member ratio in df3
-        member == "member"  ~ TRUE,
-        member == "Member"  ~ TRUE,
-        member == "guest"   ~ FALSE,
-        member == "Guest"   ~ FALSE,
-        member == "Casual"  ~ FALSE,
-        member == "casual"  ~ FALSE,
-        member == "Unknown" ~ FALSE  # I will classify unknown riders as non-members
-      )
+      day_of_yr = base::as.integer(lubridate::yday(leave))
     )
 
 
