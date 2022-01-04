@@ -12,6 +12,7 @@
 #' @param rename_expr an expression of `new_name` = `old_name` for columns to rename.
 #' @param distinct_expr an expression to determine variables that define unique station name-number combinations.
 #' Defaults to search across all variables resulting from the `rename_expr`.
+#' @param convert_expr an expression to convert/ensure variable types. See ?hablar::convert()
 #' @param check_names TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.
 #' @return a dataframe of all appended survey files
 #' @export
@@ -29,12 +30,15 @@ import_stations <- function(eval_directory,
                            file_pattern = "\\.csv",
                            station_cols = tidyselect::contains("station"),
                            rename_expr = rlang::expr(c(
-                             station_name = tidyselect::ends_with("station"),
-                             station_no   = tidyselect::ends_with("number")
+                             station_name = tidyselect::ends_with(c("station", "name")),
+                             station_no   = tidyselect::ends_with(c("number", "id"))
                              )),
                            distinct_expr = rlang::expr(c(
                              tidyselect::contains("station")
                            )),
+                           convert_expr = rlang::expr(
+                             hablar::chr(station_no)
+                           ),
                            check_names = TRUE) {
 
   # check file extension supplied
@@ -69,15 +73,15 @@ import_stations <- function(eval_directory,
                           names_pattern = "(\\D+)(\\d)") %>%
       dplyr::select(-set) %>% # remove resulting "set" col
       dplyr::distinct() %>%  # determine distinct value across all remaining columns (2) within same year
-      dplyr::mutate(year = base::as.integer(stringr::str_extract(x, "[:digit:]{4}"))) # create year variable from name
+      dplyr::mutate(year = base::as.integer(stringr::str_extract(x, "[:digit:]{4}"))) %>% # create year variable from name
+      hablar::convert(rlang::eval_tidy(convert_expr))
   }
 
   # import file into df list,
   # this function uses the helper function import_cols() from above and cycles through two lists
-  # simultaneously: the file path and the name of the file defined in the columns of `files`
-  df <- purrr::map2(
-    files$names, files$paths, import_cols
-  )
+  # simultaneously: the file path and the name of the file defined in the columns of `files`.
+  # Also, ensure that the storage types check out before appending.
+  df <- purrr::map2(files$names, files$paths, import_cols)
 
 
 
