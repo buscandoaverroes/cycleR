@@ -13,46 +13,61 @@
 #' unique station name-number combinations.
 #' @export
 #' @import dplyr
+#' @import tidyselect
 #'
 
 split_stations <- function(df,
-                           ...
+                           start_group,
+                           end_group
                            ) {
 
   # user provided variables
+    #rides <- dplyr::select(df, !{{ group_1 }}, !{{ group_2 }})
+    #stations <- dplyr::select(df, {{ group_1 }}, {{ group_2 }})
+    #rlang::set_names(rides, toupper)
+    #rlang::set_names(stations, toupper)
 
-  # separate station data from ride-level data
-  rides <- df %>%
-    dplyr::select(!tidyselect::all_of(...))
+  pair1 <- rlang::enquo(start_group)
+  pair2 <- rlang::enquo(end_group)
 
+
+  # separate rides and stations
   stations <- df %>%
-    dplyr::select(tidyselect::all_of(...)) %>%
-    group_by(..1, ..2) %>%
-    summarise() %>%
-    filter(..1 != "") %>%   # remove blank entries
-    ungroup() %>% group_by(..2) %>%
-    arrange(..1) %>% # arrange by alpha within same group number
-    mutate(id = row_number()) %>%
-    pivot_wider(names_from = id, # pivot wider
-                values_from = ..1)
+    dplyr::select(rlang::eval_tidy(pair1), rlang::eval_tidy(pair2))
+
+  rides <- df %>%
+    dplyr::select(!c(rlang::eval_tidy(pair1), rlang::eval_tidy(pair2)))
 
 
-    #dplyr::select({{ name_col_1 }}, {{ name_col_2 }}, {{ num_col_1 }}, {{ num_col_2 }})
+  split_data <- list("rides" = rides, "stations" = stations)
+
+  return(split_data)
+
+
+  # stations <- df %>%
+  #   dplyr::select(tidyselect::all_of(...)) %>%
+  #   group_by(..1, ..2) %>%
+  #   summarise() %>%
+  #   filter(..1 != "") %>%   # remove blank entries
+  #   ungroup() %>% group_by(..2) %>%
+  #   arrange(..1) %>% # arrange by alpha within same group number
+  #   mutate(id = row_number()) %>%
+  #   pivot_wider(names_from = id, # pivot wider
+  #               values_from = ..1)
+  #
+  #
+  #
+  #   namenumb <- bks %>% # for start stations only
+  #     group_by(start_name, start_number) %>%
+  #     summarise() %>%
+  #     filter(start_name != "") %>%   # remove blank entries
+  #     ungroup() %>% group_by(start_number) %>%
+  #     arrange(start_name) %>% # arrange by alpha within same group number
+  #     mutate(id = row_number()) %>%
+  #     pivot_wider(names_from = id, # pivot wider
+  #                 values_from = start_name)
 
 
 
-
-    namenumb <- bks %>% # for start stations only
-      group_by(start_name, start_number) %>%
-      summarise() %>%
-      filter(start_name != "") %>%   # remove blank entries
-      ungroup() %>% group_by(start_number) %>%
-      arrange(start_name) %>% # arrange by alpha within same group number
-      mutate(id = row_number()) %>%
-      pivot_wider(names_from = id, # pivot wider
-                  values_from = start_name)
-
-
-  return(stations)
 
 }
