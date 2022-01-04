@@ -28,13 +28,20 @@ transform_od <- function(df,
                          weekstart = 7,
                          member_var,
                          group_vars = c("start", "end", "year", "month", "hour", "day_of_wk", "day_of_yr"),
-                         round_dig  = 3
+                         round_dig  = 3,
+                         granularity# hour, day, week, month, year
                          ) {
 
   # determine groups + member var
   by <- rlang::syms(group_vars)
+  #by <- rlang::enquo(group_vars)
+  #mem <- rlang::sym(member_var)
+  mem <- rlang::enquo(member_var)
 
-  mem <- rlang::sym(member_var)
+
+  # determine granularity
+  by <- dplyr::case_when(granularity == "hour" ~ rlang::syms(c(year, month, hour)), # include station id numbers....
+                         )
 
 
   # add lubridate data for year, month, hour, etc
@@ -43,8 +50,8 @@ transform_od <- function(df,
       leave  = lubridate::ymd_hms({{ origin_datetime }}, tz = timezone),
       arrive = lubridate::ymd_hms({{ destination_datetime }}, tz = timezone)
     ) %>%
-    dplyr::mutate(             # create duration in rounded seconds
-      dur   = dplyr::if_else(base::is.na(duration),
+    dplyr::mutate(
+      dur   = dplyr::if_else(base::is.na(duration), # make duration, check for existing variable called "duration"
                       true = base::as.integer(base::round(lubridate::interval(leave, arrive))),
                       false = base::as.integer(base::round(duration))),
       year  = base::as.integer(lubridate::year(leave)),
@@ -57,13 +64,13 @@ transform_od <- function(df,
     )
 
 
-  # summarize and transform to OD data
+  # summarize by specified granularity and transform to OD data
   df3 <- df2 %>%
-    dplyr::group_by(!!!by) %>%
+    dplyr::group_by(!!!by) %>% # !!!by
     dplyr::summarise(
       dur_med = base::round(stats::median(dur, na.rm = TRUE), round_dig),
       dur_sd  = base::round(stats::sd(dur, na.rm = TRUE), round_dig),
-      member_pct = base::round(base::mean(!!!mem), round_dig),
+      member_pct = base::round(base::mean({{ member_var }}), round_dig), #!!!mem
       n_rides = n()
     )
 
