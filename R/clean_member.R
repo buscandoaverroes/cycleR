@@ -15,7 +15,7 @@
 
 
 clean_member <- function(df,
-                         col,
+                         col = "member",
                          keep = FALSE,
                          true = c("Member"),
                          false = c("guest", "Casual", "Unknown")
