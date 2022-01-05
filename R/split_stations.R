@@ -7,8 +7,12 @@
 #' the unique station info that was extracted.
 #'
 #' @param df the dataframe that contains ride-level data.
-#' @param col the string column containing member information.
-#' @param keep should the original member column be preserved in the output?
+#' @param start_name a character vector of names of columns that may contain start name data
+#' @param start_no a character vector of names of columns that may contain start number data
+#' @param end_name a character vector of names of columns that may contain end name data
+#' @param enbd_no a character vector of names of columns that may contain end number data
+#' @param end_group a tidyselect expression that define the end station information columns
+#' @param return_list FALSE, should the return object include the removed station info?
 #' @return a list object of two dataframes: the ride-level data with station info removed and the
 #' unique station name-number combinations.
 #' @export
@@ -17,57 +21,40 @@
 #'
 
 split_stations <- function(df,
-                           start_group,
-                           end_group
+                           start_name = "start",
+                           start_no = "startno",
+                           end_name = "end",
+                           end_no = "endno",
+                           return_list = FALSE,
+                           preserve_numbers = TRUE
                            ) {
-
-  # user provided variables
-    #rides <- dplyr::select(df, !{{ group_1 }}, !{{ group_2 }})
-    #stations <- dplyr::select(df, {{ group_1 }}, {{ group_2 }})
-    #rlang::set_names(rides, toupper)
-    #rlang::set_names(stations, toupper)
-
-  pair1 <- rlang::enquo(start_group)
-  pair2 <- rlang::enquo(end_group)
 
 
   # separate rides and stations
   stations <- df %>%
-    dplyr::select(rlang::eval_tidy(pair1), rlang::eval_tidy(pair2))
+    dplyr::select(tidyselect::any_of(c({{ start_name }}, {{ start_no }}, {{ end_name }}, {{ end_no }})))
 
-  rides <- df %>%
-    dplyr::select(!c(rlang::eval_tidy(pair1), rlang::eval_tidy(pair2)))
+  if (preserve_numbers) {
 
+    rides <- df %>%
+      dplyr::select(!tidyselect::any_of(c({{ start_name }}, {{ end_name }})))
 
-  split_data <- list("rides" = rides, "stations" = stations)
+  } else {
 
-  return(split_data)
+    rides <- df %>%
+      dplyr::select(!tidyselect::any_of(c({{ start_name }}, {{ start_no }}, {{ end_name }}, {{ end_no }})))
 
-
-  # stations <- df %>%
-  #   dplyr::select(tidyselect::all_of(...)) %>%
-  #   group_by(..1, ..2) %>%
-  #   summarise() %>%
-  #   filter(..1 != "") %>%   # remove blank entries
-  #   ungroup() %>% group_by(..2) %>%
-  #   arrange(..1) %>% # arrange by alpha within same group number
-  #   mutate(id = row_number()) %>%
-  #   pivot_wider(names_from = id, # pivot wider
-  #               values_from = ..1)
-  #
-  #
-  #
-  #   namenumb <- bks %>% # for start stations only
-  #     group_by(start_name, start_number) %>%
-  #     summarise() %>%
-  #     filter(start_name != "") %>%   # remove blank entries
-  #     ungroup() %>% group_by(start_number) %>%
-  #     arrange(start_name) %>% # arrange by alpha within same group number
-  #     mutate(id = row_number()) %>%
-  #     pivot_wider(names_from = id, # pivot wider
-  #                 values_from = start_name)
+    }
 
 
+  # optionally return the ride data only or rides and stations as a list
+  if (return_list) {
+    data <- list("rides" = rides, "stations" = stations)
+  } else {
+    data <- rides
+  }
 
+
+  return(data)
 
 }
