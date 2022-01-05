@@ -8,6 +8,7 @@
 #' @param eval_directory the top level directory folder
 #' @param filetype "csv". Currently only csv extensions are supported.
 #' @param station_cols a list of possible columns to check for station data. Defaults to tidyselect::contains("station")
+#' @param create_id TRUE, create a project ID column after import?
 #' @param file_pattern a quoted regex expression to match file patterns in the directory. Extensions must be .csv.
 #' @param rename_expr an expression of `new_name` = `old_name` for columns to rename.
 #' @param distinct_expr an expression to determine variables that define unique station name-number combinations.
@@ -22,6 +23,7 @@
 #' @import purrr
 #' @import data.table
 #' @import tidyr
+#' @import stats
 #'
 #'
 #'
@@ -29,6 +31,10 @@ import_stations <- function(eval_directory,
                            filetype = "csv",
                            file_pattern = "\\.csv",
                            station_cols = tidyselect::contains("station"),
+                           gps_cols = tidyselect::contains(c("lat", "lng")),
+                           create_id = TRUE,
+                           remove_missings = TRUE,
+                           missing_chr = "",
                            rename_expr = rlang::expr(c(
                              station_name = tidyselect::ends_with(c("station", "name")),
                              station_no   = tidyselect::ends_with(c("number", "id"))
@@ -66,13 +72,13 @@ import_stations <- function(eval_directory,
   import_cols <- function(x, y) {
 
     file_list[[x]] <<- data.table::fread(input = y, check.names = check_names) %>% # T/F constant carried from import_stations
-      dplyr::select(tidyselect::any_of({{ station_cols }})) %>% # list constant carried from import_stations
+      dplyr::select(tidyselect::any_of(c({{ station_cols }}, {{ gps_cols }}))) %>% # list constant carried from import_stations
       dplyr::rename(rlang::eval_tidy(rename_expr)) %>% # rename columns
       tidyr::pivot_longer(cols = c(tidyselect::contains("name"), tidyselect::contains("no")),
                           names_to = c(".value", "set"),
                           names_pattern = "(\\D+)(\\d)") %>%
       dplyr::select(-set) %>% # remove resulting "set" col
-      dplyr::distinct() %>%  # determine distinct value across all remaining columns (2) within same year
+      dplyr::distinct() %>%  # determine distinct value across all remaining columns (2 or 6) within same year
       dplyr::mutate(year = base::as.integer(stringr::str_extract(x, "[:digit:]{4}"))) %>% # create year variable from name
       hablar::convert(rlang::eval_tidy(convert_expr))
   }
@@ -89,5 +95,28 @@ import_stations <- function(eval_directory,
   df2 <- dplyr::bind_rows(df) %>%
     dplyr::distinct(station_name, station_no, .keep_all = TRUE)
 
-  return(df2)
+  if (remove_missings) {
+    df2 <- df2 %>%
+      dplyr::filter(station_name != missing_chr) %>%
+      dplyr::filter(station_no != missing_chr)
+  }
+
+
+  # create project id if `project_id` == TRUE
+  if (create_id) {
+
+    base::set.seed(47)
+
+    df3 <- df2 %>%
+      dplyr::arrange(year, station_no) %>%
+      dplyr::mutate(r = stats::runif(base::nrow(.))) %>%
+      dplyr::arrange(r) %>%
+      dplyr::mutate(id_proj = dplyr::row_number()) %>%
+      dplyr::select(-r)
+
+  } else {
+    df3 <- df2
+  }
+
+  return(df3)
 }
