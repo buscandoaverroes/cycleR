@@ -13,6 +13,7 @@
 #' @param member member, an unquoted name of the variable containing the string member data.
 #' @param group_vars a character vector of additional variables to determine origin-destination groups.
 #' Defaults to group by start/end station and year-month-day-hour.
+#' @param station_vars a character vector of variable names that define the unique stations.
 #' @param round_dig 3, the number of digits when rounding.
 #' @return a dataframe of summarized origin-destination information.
 #' @export
@@ -27,21 +28,22 @@ transform_od <- function(df,
                          timezone = "US/Eastern",
                          weekstart = 7,
                          member_var,
-                         group_vars = c("start", "end", "year", "month", "hour", "day_of_wk", "day_of_yr"),
+                         group_vars = c("year", "month", "hour", "day_of_wk", "day_of_yr"),
+                         station_vars = c("startno", "endno"),
                          round_dig  = 3,
-                         granularity# hour, day, week, month, year
+                         granularity = NULL # hour, day, week, month, year
                          ) {
 
+  gran <- dplyr::case_when(
+    granularity == "hour" ~ c("year", "month", "hour", "day_of_wk", "day_of_yr"),
+    granularity == "day"  ~ c("year", "month", "day_of_wk", "day_of_yr"),
+    granularity == "month" ~ c("year", "month")
+  )
+
+
   # determine groups + member var
-  by <- rlang::syms(group_vars)
-  #by <- rlang::enquo(group_vars)
-  #mem <- rlang::sym(member_var)
-  mem <- rlang::enquo(member_var)
-
-
-  # determine granularity
-  by <- dplyr::case_when(granularity == "hour" ~ rlang::syms(c(year, month, hour)), # include station id numbers....
-                         )
+  by <- rlang::syms(c(group_vars, station_vars))
+  mem <- rlang::sym(member_var)
 
 
   # add lubridate data for year, month, hour, etc
@@ -66,11 +68,11 @@ transform_od <- function(df,
 
   # summarize by specified granularity and transform to OD data
   df3 <- df2 %>%
-    dplyr::group_by(!!!by) %>% # !!!by
+    dplyr::group_by( !!!by ) %>% # !!!by
     dplyr::summarise(
       dur_med = base::round(stats::median(dur, na.rm = TRUE), round_dig),
       dur_sd  = base::round(stats::sd(dur, na.rm = TRUE), round_dig),
-      member_pct = base::round(base::mean({{ member_var }}), round_dig), #!!!mem
+      member_pct = base::round(base::mean(!!mem), round_dig), #!!!mem
       n_rides = n()
     )
 
