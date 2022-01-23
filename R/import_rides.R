@@ -10,6 +10,7 @@
 #' @param file_pattern a quoted regex expression to match file patterns in the directory. Extensions must be .csv.
 #' @param rename_cols a vector of new names passed on to \code{data.table::fread()} to rename columns.
 #' @param check_names TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.
+#' @param nrows Inf passed on to \code{data.table::fread()}. Either Inf or numeric value
 #' @return a dataframe of all appended survey files
 #' @export
 #' @import dplyr
@@ -22,6 +23,7 @@ import_rides <- function(eval_directory,
                          filetype = "csv",
                          file_pattern = "\\.csv",
                          rename_cols = NULL,
+                         nrows = Inf,
                          check_names = TRUE) {
 
   # check file extension supplied
@@ -48,7 +50,7 @@ import_rides <- function(eval_directory,
     df <- purrr::map2(
       files$names, files$paths,
       function(x, y) {
-        file_list[[x]] <<- data.table::fread(input = y, check.names = check_names, col.names = rename_cols)
+        file_list[[x]] <<- data.table::fread(input = y, check.names = check_names, col.names = rename_cols, nrows = nrows)
           }
     )
 
