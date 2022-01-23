@@ -14,3 +14,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports: dplyr, tidyselect, magrittr, tibble, rlang, data.table 
 Depends: R (>= 3.5.0)
+Suggests: 
+    rmarkdown,
+    knitr
+VignetteBuilder: knitr
