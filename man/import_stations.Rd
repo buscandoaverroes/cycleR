@@ -29,7 +29,13 @@ import_stations(
 
 \item{station_cols}{a list of possible columns to check for station data. Defaults to tidyselect::contains("station")}
 
+\item{gps_cols}{a tidyselect expression to determine the group of gps columns}
+
 \item{create_id}{TRUE, create a project ID column after import?}
+
+\item{remove_missings}{TRUE should missing character strings be removed?}
+
+\item{missing_chr}{what character is equivalent to a missing value?}
 
 \item{rename_expr}{an expression of \code{new_name} = \code{old_name} for columns to rename.}
 

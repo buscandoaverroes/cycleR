@@ -14,6 +14,9 @@
 #' @param distinct_expr an expression to determine variables that define unique station name-number combinations.
 #' Defaults to search across all variables resulting from the `rename_expr`.
 #' @param convert_expr an expression to convert/ensure variable types. See ?hablar::convert()
+#' @param gps_cols a tidyselect expression to determine the group of gps columns
+#' @param remove_missings TRUE should missing character strings be removed?
+#' @param missing_chr what character is equivalent to a missing value?
 #' @param check_names TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.
 #' @return a dataframe of all appended survey files
 #' @export
@@ -24,6 +27,7 @@
 #' @import data.table
 #' @import tidyr
 #' @import stats
+#' @import hablar
 #'
 #'
 #'

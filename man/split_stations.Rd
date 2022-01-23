@@ -23,11 +23,11 @@ split_stations(
 
 \item{end_name}{a character vector of names of columns that may contain end name data}
 
+\item{end_no}{a character vector of names of columns that may contain end number data}
+
 \item{return_list}{FALSE, should the return object include the removed station info?}
 
-\item{enbd_no}{a character vector of names of columns that may contain end number data}
-
-\item{end_group}{a tidyselect expression that define the end station information columns}
+\item{preserve_numbers}{TRUE, should the columns containing the start and end station numbers be maintained?}
 }
 \value{
 a list object of two dataframes: the ride-level data with station info removed and the

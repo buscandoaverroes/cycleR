@@ -12,7 +12,7 @@ Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-Imports: dplyr, tidyselect, magrittr, tibble, rlang, data.table 
+Imports: dplyr, tidyselect, magrittr, tibble, rlang, data.table, haven, janitor, lubridate, purrr, stringr, tidyr, hablar
 Depends: R (>= 3.5.0)
 Suggests: 
     rmarkdown,

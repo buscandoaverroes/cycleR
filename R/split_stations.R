@@ -10,9 +10,9 @@
 #' @param start_name a character vector of names of columns that may contain start name data
 #' @param start_no a character vector of names of columns that may contain start number data
 #' @param end_name a character vector of names of columns that may contain end name data
-#' @param enbd_no a character vector of names of columns that may contain end number data
-#' @param end_group a tidyselect expression that define the end station information columns
+#' @param end_no a character vector of names of columns that may contain end number data
 #' @param return_list FALSE, should the return object include the removed station info?
+#' @param preserve_numbers TRUE, should the columns containing the start and end station numbers be maintained?
 #' @return a list object of two dataframes: the ride-level data with station info removed and the
 #' unique station name-number combinations.
 #' @export

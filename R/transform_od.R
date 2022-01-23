@@ -10,11 +10,12 @@
 #' @param destination_datetime the column containing destination/arrival date-time information.
 #' @param timezone "US/Eastern", the timezone passed to \code{lubridate}. See \code{base::OlsonNames()} for valid tz names.
 #' @param weekstart 7, an integer passed to \code{base::getOption('lubridate.week.start')}. Determines the start day of the week. 7 = Sunday.
-#' @param member member, an unquoted name of the variable containing the string member data.
+#' @param member_var member, an unquoted name of the variable containing the string member data.
 #' @param group_vars a character vector of additional variables to determine origin-destination groups.
 #' Defaults to group by start/end station and year-month-day-hour.
 #' @param station_vars a character vector of variable names that define the unique stations.
 #' @param round_dig 3, the number of digits when rounding.
+#' @param granularity NULL one of "hour", "day", or "month". The precision to which the data will be collapsed.
 #' @return a dataframe of summarized origin-destination information.
 #' @export
 #' @import dplyr

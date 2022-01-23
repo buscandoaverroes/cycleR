@@ -8,6 +8,8 @@
 #' @param df the dataframe that contains ride-level data.
 #' @param col the string column containing member information.
 #' @param keep should the original member column be preserved in the output?
+#' @param true a character vector of strings that determine active membership
+#' @param false character vector of strings that determine non-membership
 #' @return a dataframe of all ammended member information in `member`.
 #' @export
 #' @import dplyr

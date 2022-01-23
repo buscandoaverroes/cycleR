@@ -18,6 +18,10 @@ clean_member(
 \item{col}{the string column containing member information.}
 
 \item{keep}{should the original member column be preserved in the output?}
+
+\item{true}{a character vector of strings that determine active membership}
+
+\item{false}{character vector of strings that determine non-membership}
 }
 \value{
 a dataframe of all ammended member information in \code{member}.
