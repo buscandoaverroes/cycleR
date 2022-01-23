@@ -2,7 +2,7 @@
 title: "Overview"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Overview}
+  %\VignetteIndexEntry{Overview and Workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,4 +16,89 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(cycleR)
+```
+
+# Introduction
+
+\[welcoming introduction\]
+
+The general sequence of data flow is as follows:
+
+1.  Import the raw ride data
+
+2.  Separate the station information from the ride information
+
+3.  Make station dictionary?
+
+4.  Clean member info?
+
+5.  transform to origin-destination?
+
+# 
+
+# Import Raw Ride Data
+
+We'll start by saving the path to the top folder of the raw data.
+
+```{r}
+# data path
+data <- "/Volumes/Al-Hakem-II/Datasets/bks/raw"
+```
+
+Now let's import the data for all of a single year. The function `import_rides()` does a few things for us. It finds the files we want, harmonizes variable names, and appends them in a single tibble object.
+
+First, it imports all of the `.csv` files in a single directory. We can optionally have it import only certain files within the declared directory that match a regex expression with `file_pattern`. Once it finds the files we want, imports each and ensures that each variable is named appropriately. Then, it appends all of them in a single tibble.
+
+But we may not know the names of the columns in the raw data. Also, the names may change over time. Let's use the helper function `view_colnames()` before importing to help us.
+
+## Check Column Names
+
+The helper function `view_colnames()` was designed to be used right before `import_rides()` . Note that it carries many of the same arguments. Let's try it.
+
+```{r}
+colnames <- view_colnames(eval_directory = data)
+colnames
+```
+
+We see that the returned object `colnames` is a data.frame that lists all unique variable names under `colnames$column_name` and the storage type for each file in the directory. If a variable doesn't exist in one of the files, the appropriate `df_n` lists that variable as `NA`.
+
+Based on the result from `view_colnames()` let's come up with a character vector of column names that will work for all data.frames
+
+```{r}
+raw_rename <- c("duration",
+                 "startdt",
+                 "enddt",
+                 "startno",
+                 "start",
+                 "endno",
+                 "end",
+                 "bikeno",
+                 "member")
+
+raw_rename2 <- c(
+  "Bike.number" = "bikeno",
+  "Duration" = "duration",
+  "End.date" = "enddt",
+  "End.station" = "end",
+  "End.station.number" = "endno", 
+  "end_station_id" = "endno",
+  "end_station_name" = "end", 
+  "ended_at" = "enddt",
+  "Member.type"  = "member",        
+  "member_casual" = "member",
+  "Start.date" = "startdt",          
+  "Start.station" = "start",
+  "Start.station.number" = "startno", 
+  "start_station_id" = "startno",   
+  "start_station_name" = "start",
+  "started_at"   = "startdt"
+)
+```
+
+## Import Ride Data
+
+Now we're ready to import the raw ride data. For this vignette, let's only import the first 500 rides of each file for speed.
+
+```{r}
+rides <- import_rides(eval_directory = data, rename_cols = raw_rename2, nrows = 500)
 ```
