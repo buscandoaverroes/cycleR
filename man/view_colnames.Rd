@@ -21,7 +21,7 @@ view_colnames(
 
 \item{n_rows}{10, the number of rows to import for each csv file.}
 
-\item{check_names}{TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.}
+\item{check_names}{FALSE a logical vector passed on to \code{data.table::fread()} to check raw column names.}
 }
 \value{
 a dataframe of all appended survey files

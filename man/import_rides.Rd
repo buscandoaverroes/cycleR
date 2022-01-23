@@ -9,6 +9,7 @@ import_rides(
   filetype = "csv",
   file_pattern = "\\\\.csv",
   rename_cols = NULL,
+  nrows = Inf,
   check_names = TRUE
 )
 }
@@ -20,6 +21,8 @@ import_rides(
 \item{file_pattern}{a quoted regex expression to match file patterns in the directory. Extensions must be .csv.}
 
 \item{rename_cols}{a vector of new names passed on to \code{data.table::fread()} to rename columns.}
+
+\item{nrows}{Inf passed on to \code{data.table::fread()}. Either Inf or numeric value}
 
 \item{check_names}{TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.}
 }

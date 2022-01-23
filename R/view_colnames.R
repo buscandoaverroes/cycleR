@@ -8,7 +8,7 @@
 #' @param filetype "csv". Currently only csv extensions are supported.
 #' @param file_pattern a quoted regex expression to match file patterns in the directory. Extensions must be .csv.
 #' @param n_rows 10, the number of rows to import for each csv file.
-#' @param check_names TRUE a logical vector passed on to \code{data.table::fread()} to check raw column names.
+#' @param check_names FALSE a logical vector passed on to \code{data.table::fread()} to check raw column names.
 #' @return a dataframe of all appended survey files
 #' @export
 #' @import dplyr
