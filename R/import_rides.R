@@ -17,6 +17,7 @@
 #' @import haven
 #' @import stringr
 #' @import purrr
+#' @import magrittr
 #' @import data.table
 
 import_rides <- function(eval_directory,
@@ -50,7 +51,8 @@ import_rides <- function(eval_directory,
     df <- purrr::map2(
       files$names, files$paths,
       function(x, y) {
-        file_list[[x]] <<- data.table::fread(input = y, check.names = check_names, col.names = rename_cols, nrows = nrows)
+        file_list[[x]] <<- data.table::fread(input = y, check.names = check_names, nrows = nrows) %>%
+          rename(any_of(rename_cols))
           }
     )
 

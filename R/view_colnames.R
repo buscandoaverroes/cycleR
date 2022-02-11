@@ -17,6 +17,7 @@
 #' @import purrr
 #' @import data.table
 #' @import tidyr
+#' @import magrittr
 #' @import janitor
 #'
 #'

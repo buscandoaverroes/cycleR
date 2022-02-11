@@ -13,6 +13,7 @@
 #' @return a dataframe of all ammended member information in `member`.
 #' @export
 #' @import dplyr
+#' @import magrittr
 #'
 
 

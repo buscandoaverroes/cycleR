@@ -17,6 +17,7 @@
 #' unique station name-number combinations.
 #' @export
 #' @import dplyr
+#' @import magrittr
 #' @import tidyselect
 #'
 

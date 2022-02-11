@@ -27,6 +27,7 @@
 #' @import data.table
 #' @import tidyr
 #' @import stats
+#' @import magrittr
 #' @import hablar
 #'
 #'
