@@ -56,7 +56,7 @@ But we may not know the names of the columns in the raw data. Also, the names ma
 The helper function `view_colnames()` was designed to be used right before `import_rides()` . Note that it carries many of the same arguments. Let's try it.
 
 ```{r}
-colnames <- view_colnames(eval_directory = data)
+colnames <- view_colnames(eval_directory = data, check_names = TRUE)
 colnames
 ```
 
@@ -93,6 +93,25 @@ raw_rename2 <- c(
   "start_station_name" = "start",
   "started_at"   = "startdt"
 )
+
+raw_rename3 <- c(
+  "bikeno" = "Bike.number",
+  "duration" = "Duration",
+  "enddt" = "End.date",
+  "end" = "End.station" ,
+  "endno" = "End.station.number" , 
+  "endno" = "end_station_id",
+  "end" = "end_station_name", 
+  "enddt" = "ended_at",
+  "member" =  "Member.type",        
+  "member" = "member_casual",
+  "startdt" = "Start.date",          
+  "start" = "Start.station",
+  "startno" = "Start.station.number", 
+  "startno" = "start_station_id",   
+  "start" =  "start_station_name",
+  "startdt" = "started_at"
+)
 ```
 
 ## Import Ride Data
@@ -100,5 +119,5 @@ raw_rename2 <- c(
 Now we're ready to import the raw ride data. For this vignette, let's only import the first 500 rides of each file for speed.
 
 ```{r}
-rides <- import_rides(eval_directory = data, rename_cols = raw_rename2, nrows = 500)
+rides <- import_rides(eval_directory = data, rename_cols = raw_rename3, nrows = 500)
 ```
