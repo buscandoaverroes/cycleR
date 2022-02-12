@@ -96,8 +96,11 @@ import_stations <- function(eval_directory,
 
 
 
-  # bind all rows of df and determine distinctness across all years
+  # bind all rows of df, fill missing gps data and determine distinctness across all years
   df2 <- dplyr::bind_rows(df) %>%
+    dplyr::group_by(station_no, station_name) %>%
+    dplyr::arrange(station_no) %>%
+    tidyr::fill(gps_cols, .direction = "downup") %>%
     dplyr::distinct(station_name, station_no, .keep_all = TRUE)
 
   if (remove_missings) {
@@ -113,8 +116,8 @@ import_stations <- function(eval_directory,
     base::set.seed(47)
 
     df3 <- df2 %>%
-      dplyr::arrange(year, station_no) %>%
-      dplyr::mutate(r = stats::runif(base::nrow(.))) %>%
+      dplyr::ungroup() %>%
+      mutate(r = stats::runif(dplyr::n())) %>%
       dplyr::arrange(r) %>%
       dplyr::mutate(id_proj = dplyr::row_number()) %>%
       dplyr::select(-r)
