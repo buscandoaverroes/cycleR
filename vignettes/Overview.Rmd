@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(cycleR)
+library(tidyverse)
 ```
 
 # Introduction
@@ -65,36 +66,7 @@ We see that the returned object `colnames` is a data.frame that lists all unique
 Based on the result from `view_colnames()` let's come up with a character vector of column names that will work for all data.frames
 
 ```{r}
-raw_rename <- c("duration",
-                 "startdt",
-                 "enddt",
-                 "startno",
-                 "start",
-                 "endno",
-                 "end",
-                 "bikeno",
-                 "member")
-
-raw_rename2 <- c(
-  "Bike.number" = "bikeno",
-  "Duration" = "duration",
-  "End.date" = "enddt",
-  "End.station" = "end",
-  "End.station.number" = "endno", 
-  "end_station_id" = "endno",
-  "end_station_name" = "end", 
-  "ended_at" = "enddt",
-  "Member.type"  = "member",        
-  "member_casual" = "member",
-  "Start.date" = "startdt",          
-  "Start.station" = "start",
-  "Start.station.number" = "startno", 
-  "start_station_id" = "startno",   
-  "start_station_name" = "start",
-  "started_at"   = "startdt"
-)
-
-raw_rename3 <- c(
+raw_rename <- c(
   "bikeno" = "Bike.number",
   "duration" = "Duration",
   "enddt" = "End.date",
@@ -110,8 +82,7 @@ raw_rename3 <- c(
   "startno" = "Start.station.number", 
   "startno" = "start_station_id",   
   "start" =  "start_station_name",
-  "startdt" = "started_at"
-)
+  "startdt" = "started_at")
 ```
 
 ## Import Ride Data
@@ -119,5 +90,76 @@ raw_rename3 <- c(
 Now we're ready to import the raw ride data. For this vignette, let's only import the first 500 rides of each file for speed.
 
 ```{r}
-rides <- import_rides(eval_directory = data, rename_cols = raw_rename3, nrows = 500)
+rides <- import_rides(eval_directory = data, rename_cols = raw_rename, nrows = 500)
+
+head(rides)
+```
+
+## Import Station Data
+
+But the ride-level data is only part of the story. We also want to keep track of where each station is so we can later incorporate weather data and do more advanced analysis at the station-level.
+
+We'll use the function `import_stations()` for this task. The function is similar to `import_rides()` in two ways: it takes *ride-level data* as an input and scans a given directory for these bikeshare ride files. However, the output is station-level data. The function searches the ride-level data and returns a tibble of unique station.
+
+In order for the function to work properly, we have to feed `import_stations()` the right information about our dataset. First, the function needs to know what columns to look for the station string data. for the `station_cols` argument, you can supply a tidyselect expression such as `tidyselect::contains("station")` . Similarly for `gps_cols`, supply an expression that finds the lat/long data. The `create_id` boolean argument tells the function whether or not to make a unique ID column.
+
+```{r}
+stations <- import_stations(eval_directory = data,
+                            station_cols = tidyselect::contains("station"),
+                            gps_cols = tidyselect::contains(c("lat", "lng")),
+                            create_id = TRUE)
+head(stations)
+```
+
+At this point, we could incorporate additional geolocation data to our station dictionary. But, let's skip that for now.
+
+## Join Station and Ride Data 
+
+The `rides` ride-level object is quite large, even in our reduced sample. We can reduce it's size by removing unnecessary columns and by using only a numeric station key to identify the start and end stations. Let's first drop unneeded columns. To keep things simple, let's only work with classic docked bikes and remove ride type
+
+```{r}
+classic <- rides %>%
+  select(-c("bikeno", "ride_id",
+            "start_lat", "start_lng", "end_lat","end_lng" ))%>%
+  filter(rideable_type == "classic_bike") %>%
+  select(-rideable_type)
+
+head(classic)
+```
+
+Now, we see that the `start` and `end` are string values. But we don't always need to have the station name itself in the working dataset. We can further reduce the size by joining the ride data with the station data and keeping only the numeric `project_id` for each start and end station. Finally, let's simplify the member variable to be binary; we'll tell `clean_member()` what string values should be categorized under `TRUE` and `FALSE` .
+
+```{r}
+# make sure that station_no is saved as numeric
+stations <- stations %>%
+  mutate(station_no = as.numeric(station_no))
+
+
+classic <- classic %>%
+  left_join(stations, 
+            by = c("start" = "station_name", "startno" = "station_no"),
+            copy = FALSE) %>%
+  rename("start_id_proj" = "id_proj") %>%
+  select(-c(year, tidyselect::contains(c("lat", "lng")))) %>%
+  left_join(stations, 
+            by = c("end" = "station_name", "endno" = "station_no"),
+            copy = FALSE) %>%
+  rename("end_id_proj" = "id_proj") %>%
+  select(-c(year, start, end, startno, endno, tidyselect::contains(c("lat", "lng")))) %>%
+  clean_member(col = "member", 
+               true = c("Member"), 
+               false = c("guest", "Casual", "Unknown"))
+  
+```
+
+## Transform to Origin-Destination
+
+We could keep the data like this, but let's transform to origin-destination (more...)
+
+Add hour, month, etc
+
+```{r}
+classic %>%
+  transform_od(origin_datetime = startdt, destination_datetime = enddt,
+               member_var = member)
 ```
