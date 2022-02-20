@@ -11,7 +11,6 @@ transform_od(
   timezone = "US/Eastern",
   weekstart = 7,
   member_var,
-  group_vars = c("year", "month", "hour", "day_of_wk", "day_of_yr"),
   station_vars = c("startno", "endno"),
   round_dig = 3,
   granularity = NULL
@@ -29,9 +28,6 @@ transform_od(
 \item{weekstart}{7, an integer passed to \code{base::getOption('lubridate.week.start')}. Determines the start day of the week. 7 = Sunday.}
 
 \item{member_var}{member, an unquoted name of the variable containing the string member data.}
-
-\item{group_vars}{a character vector of additional variables to determine origin-destination groups.
-Defaults to group by start/end station and year-month-day-hour.}
 
 \item{station_vars}{a character vector of variable names that define the unique stations.}
 
