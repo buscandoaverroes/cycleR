@@ -17,25 +17,28 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(cycleR)
 library(tidyverse)
+library(stplanr)
 ```
 
 # Introduction
 
-\[welcoming introduction\]
+Welcome. I love to bike; and since bicycling is a healthy and sustainable alternative to carbon-expensive modes of transit, I'm stubbornly curious about urban bicycle networks. Many systems now publish de-identified data in some form or another and I created the `cycleR` package to simplify cleaning processes from raw system data.
 
-The general sequence of data flow is as follows:
+I hope this package is useful for you in some way, but bear in mind that I make a few assumptions about the incoming data you're working with:
+
+1.  The data are observed at "ride-level" -- meaning that each row represents a unique start-end trip.
+
+2.  The rideshare system is organized primarily into bikeshare stations, where each ride typically starts and ends at a known bike dock or station.
+
+The general sequence of data flow is as follows, but this may change as I improve the package:
 
 1.  Import the raw ride data
 
-2.  Separate the station information from the ride information
+2.  Import the station data
 
-3.  Make station dictionary?
+3.  Join station and ride data
 
-4.  Clean member info?
-
-5.  transform to origin-destination?
-
-# 
+4.  Transform to Origin-Destination format
 
 # Import Raw Ride Data
 
@@ -113,7 +116,7 @@ head(stations)
 
 At this point, we could incorporate additional geolocation data to our station dictionary. But, let's skip that for now.
 
-## Join Station and Ride Data 
+# Join Station and Ride Data
 
 The `rides` ride-level object is quite large, even in our reduced sample. We can reduce it's size by removing unnecessary columns and by using only a numeric station key to identify the start and end stations. Let's first drop unneeded columns. To keep things simple, let's only work with classic docked bikes and remove ride type
 
@@ -152,14 +155,30 @@ classic <- classic %>%
   
 ```
 
-## Transform to Origin-Destination
+# Transform to Origin-Destination
 
-We could keep the data like this, but let's transform to origin-destination (more...)
+We could keep the data like this, but let's transform to origin-destination summary format. My use "Origin-Destination" comes from the `stplanr` [package from ROpenSci](https://docs.ropensci.org/stplanr/articles/stplanr-od.html). Our data in `classic` is observed at the ride-level, meaning that each line represents one distinct bikeshare ride from point A to B. Origin-Destination (OD) format summarizes this data such that one entry represents the number of rides in a given time period between two given stations.
 
-Add hour, month, etc
+OD format has a number of advantages compared to ride-level data. First, it compresses the data, which makes it easier and faster to perform analysis. Second, having an OD format allows us to interface with other existing packages, such as `stplanr`, and analyze node-to-node travel patterns.
 
 ```{r}
 classic %>%
-  transform_od(origin_datetime = startdt, destination_datetime = enddt,
-               member_var = member)
+  select(-duration) %>%
+  head()
 ```
+
+## OD Long Form
+
+We'll use `transform_od()` to rework our data into origin-destination format, long form, where each line represents a unique flow-time summary. The function reads `origin_datetime` and `destination_datetime` in POSIXct format, and requires the two start and end station number variables in the order `c("start_variable", "end_variable")` . The `granularity` argument is one of "day", "month", or "year"; this determines how to group the rides at each start-end station combination. Compare the two results of "day" and "month":
+
+```{r}
+od <- classic %>%
+  transform_od(origin_datetime = startdt,
+               destination_datetime = enddt,
+               station_vars = c("start_id_proj", "end_id_proj"),
+               member_var = member,
+               granularity = "day")
+od
+```
+
+Once in OD long form, we can perform flow analysis and create desire lines as in the `stplanr` package. Happy cycling!
