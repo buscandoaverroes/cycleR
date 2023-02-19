@@ -13,8 +13,8 @@ import_stations(
   create_id = TRUE,
   remove_missings = TRUE,
   missing_chr = "",
-  rename_expr = rlang::expr(c(station_name = tidyselect::ends_with(c("station",
-    "name")), station_no = tidyselect::ends_with(c("number", "id")))),
+  rename_expr = rlang::expr(c(station_name = tidyselect::ends_with(c("station", "name")),
+    station_no = tidyselect::ends_with(c("number", "id")))),
   distinct_expr = rlang::expr(c(tidyselect::contains("station"))),
   convert_expr = rlang::expr(hablar::chr(station_no)),
   check_names = TRUE
